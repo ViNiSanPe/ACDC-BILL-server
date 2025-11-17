@@ -2,53 +2,64 @@ import {
   Controller,
   Post,
   Get,
-  Param,
   Delete,
+  Param,
   Body,
   UploadedFile,
   UseInterceptors,
-  ParseUUIDPipe,
 } from '@nestjs/common';
+
 import { BillingService } from './billing.service';
 import { CreateBillingDto } from './dto/create-billing.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Express } from 'express';
+import type { Express } from 'express';
+import express from 'express';
+import { Res } from '@nestjs/common';
+import { Multer } from 'multer';
 
 @Controller('billing')
 export class BillingController {
   constructor(private readonly billingService: BillingService) {}
 
-  @Post('upload')
-  @UseInterceptors(FileInterceptor('file'))
-  async uploadFile(
-    @UploadedFile() file: Express.Multer.File,
-    @Body() dto: CreateBillingDto,
-  ) {
-    return this.billingService.processTxtAndCreateBilling(file, dto);
-  }
-
-  @Post()
-  async create(@Body() dto: CreateBillingDto) {
-    return this.billingService.create(dto);
-  }
-
-  @Get()
-  async findAll() {
-    return this.billingService.findAll();
-  }
+@Post()
+@UseInterceptors(FileInterceptor('file'))
+async create(
+  @UploadedFile() file: Express.Multer.File,
+  @Body() dto: CreateBillingDto,
+) {
+  return this.billingService.create(file, dto);
+}
 
   @Get(':id')
-  async findOne(@Param('id') id: string) {
-    return this.billingService.findOne(id);
+  async findById(@Param('id') id: string) {
+    return this.billingService.findById(id);
   }
 
-  @Get(':id/download')
-  async download(@Param('id') id: string) {
-    return this.billingService.downloadProcessedFile(id); 
-  }
+ @Get('download/:product')
+async downloadByProduct(
+  @Param('product') product: string,
+  @Res() res: express.Response,
+) {
+  return this.billingService.downloadByProduct(product, res);
+}
 
   @Delete(':id')
-  async remove(@Param('id') id: string) {
-    await return this.billingService.remove(id);
+  async delete(@Param('id') id: string) {
+    return this.billingService.delete(id);
+  }
+
+  @Post('create-many')
+  async createMany(@Body() dtoArray: CreateBillingDto[]) {
+    return this.billingService.createMany(dtoArray);
+  }
+
+  @Get(':billingId/beneficiaries')
+  async findAllByBilling(@Param('billingId') billingId: string) {
+    return this.billingService.findAllByBilling(billingId);
+  }
+
+  @Delete(':billingId/beneficiaries')
+  async deleteAllByBilling(@Param('billingId') billingId: string) {
+    return this.billingService.deleteAllByBilling(billingId);
   }
 }

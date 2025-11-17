@@ -15,7 +15,6 @@ import { createInterface } from 'readline';
 import { Worker } from 'worker_threads';
 import { join } from 'path';
 import { Response } from 'express';
-import { Multer } from 'multer';
 
 @Injectable()
 export class BillingService {
@@ -32,7 +31,7 @@ export class BillingService {
       const readable = Readable.from(file.buffer);
     
       const worker = new Worker(
-        join(__dirname, 'worker', 'processTxt.worker.js'),
+        join(__dirname, 'worker', 'processTxt.worker.ts'),
         { workerData: { billingId: billing._id.toString() } },
       );
 
@@ -80,32 +79,23 @@ export class BillingService {
     return billing;
   }
 
-  async delete(id: string) {
-    const billing = await this.billingModel.findById(id);
-    if (!billing) throw new NotFoundException('Billing não encontrado');
-
-    await this.beneficiaryService.deleteAllByBilling(id);
-    await this.billingModel.deleteOne({ _id: id });
-
-    return { message: 'Billing e beneficiários removidos' };
-  }
-
+  
   async downloadByProduct(product: string, res: Response) {
     const billings = await this.billingModel.find({ product });
-
+    
     if (!billings.length) {
       throw new NotFoundException('Nenhum billing encontrado para o produto');
     }
-
+    
     res.set({
       'Content-Type': 'text/plain',
       'Content-Disposition': `attachment; filename="${product}-report.txt"`,
     });
-
+    
     const stream = new Readable({
       read() {},
     });
-  
+    
     for (const bill of billings) {
       stream.push(`Company: ${bill.company}\n`);
       stream.push(`Product: ${bill.product}\n`);
@@ -113,9 +103,19 @@ export class BillingService {
       stream.push(`Total Lives: ${bill.totalLives}\n`);
       stream.push('------------------------------\n');
     }
-
+    
     stream.push(null);
-
+    
     stream.pipe(res);
+  }
+
+  async delete(id: string) {
+    const billing = await this.billingModel.findById(id);
+    if (!billing) throw new NotFoundException('Billing não encontrado');
+
+    await this.beneficiaryService.deleteAllByBilling(id);
+    await this.billingModel.deleteOne({ _id: id });
+
+    return { message: 'Billing e Beneficiários removidos' };
   }
 }

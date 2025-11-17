@@ -11,35 +11,25 @@ import { BeneficiaryService } from "./beneficiary.service";
 import { CreateBeneficiaryDto } from "./dto/create-beneficiary.dto";
 import { UpdateBeneficiaryDto } from "./dto/update-beneficiary.dto";
 
-@Controller("beneficiary")
+@Controller('beneficiary')
 export class BeneficiaryController {
   constructor(private readonly beneficiaryService: BeneficiaryService) {}
 
-  @Post()
-  create(@Body() createBeneficiaryDto: CreateBeneficiaryDto) {
-    return this.beneficiaryService.create(createBeneficiaryDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.beneficiaryService.findAll();
-  }
-
-  @Get(":id")
-  findOne(@Param("id") id: string) {
-    return this.beneficiaryService.findOne(+id);
-  }
-
-  @Patch(":id")
-  update(
-    @Param("id") id: string,
-    @Body() updateBeneficiaryDto: UpdateBeneficiaryDto,
+  @Post('create-many/:billingId')
+  async createMany(
+    @Param('billingId') billingId: string,
+    @Body() beneficiaries: CreateBeneficiaryDto[],
   ) {
-    return this.beneficiaryService.update(+id, updateBeneficiaryDto);
+    return this.beneficiaryService.createMany(billingId, beneficiaries);
   }
 
-  @Delete(":id")
-  remove(@Param("id") id: string) {
-    return this.beneficiaryService.remove(+id);
+  @Get('by-billing/:billingId')
+  async findAllByBilling(@Param('billingId') billingId: string) {
+    return this.beneficiaryService.findAllByBilling(billingId);
+  }
+
+  @Delete('by-billing/:billingId')
+  async deleteAllByBilling(@Param('billingId') billingId: string) {
+    return this.beneficiaryService.deleteAllByBilling(billingId);
   }
 }

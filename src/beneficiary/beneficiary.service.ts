@@ -1,26 +1,33 @@
-import { Injectable } from "@nestjs/common";
-import { CreateBeneficiaryDto } from "./dto/create-beneficiary.dto";
-import { UpdateBeneficiaryDto } from "./dto/update-beneficiary.dto";
+import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Beneficiary } from "../beneficiary/schemas/beneficiary.schemas"
+import { CreateBeneficiaryDto } from './dto/create-beneficiary.dto';
 
 @Injectable()
 export class BeneficiaryService {
-  create(createBeneficiaryDto: CreateBeneficiaryDto) {
-    return "This action adds a new beneficiary";
+  constructor(
+    @InjectModel(Beneficiary.name)
+    private readonly beneficiaryModel: Model<Beneficiary>,
+  ) {}
+
+  async createMany(
+    billingId: string,
+    beneficiaries: CreateBeneficiaryDto[],
+  ) {
+    const data = beneficiaries.map((b) => ({
+      ...b,
+      billingId,
+    }));
+
+    return this.beneficiaryModel.insertMany(data);
   }
 
-  findAll() {
-    return `This action returns all beneficiary`;
+  async findAllByBilling(billingId: string) {
+    return this.beneficiaryModel.find({ billingId }).exec();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} beneficiary`;
-  }
-
-  update(id: number, updateBeneficiaryDto: UpdateBeneficiaryDto) {
-    return `This action updates a #${id} beneficiary`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} beneficiary`;
+  async deleteAllByBilling(billingId: string) {
+    return this.beneficiaryModel.deleteMany({ billingId }).exec();
   }
 }
