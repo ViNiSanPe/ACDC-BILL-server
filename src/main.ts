@@ -1,8 +1,5 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import { NestExpressApplication } from "@nestjs/platform-express";
@@ -20,6 +17,6 @@ async function bootstrap(): Promise<void> {
 
   const port = config.get<number>("app.port") ?? 3000;
   await app.listen(port, "0.0.0.0");
-  console.log("🔥 Server rodando na porta", port);
+  console.log("Server running on port", port);
 }
 bootstrap();
